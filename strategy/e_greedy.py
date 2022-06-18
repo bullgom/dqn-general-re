@@ -1,5 +1,7 @@
 from .strategy import Strategy
+from my_types import Q, Action
 import torch
+
 
 class EpsilonGreedy(Strategy):
     def __init__(self, start: float, end: float, decay_steps: int):
@@ -13,7 +15,7 @@ class EpsilonGreedy(Strategy):
 
         self.slope = (end-start)/decay_steps
 
-    def select(self, q: torch.Tensor) -> torch.Tensor:
+    def select(self, q: Q) -> Action:
         """
         If multiple action dimension, run this for each dimension
         """

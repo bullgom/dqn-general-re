@@ -1,17 +1,10 @@
 from abc import abstractmethod
-import torch
-
 from serializable import Serializable
+from base import Base
+from my_types import Q, Action
 
-
-class Strategy(Serializable):
+class Strategy(Base, Serializable):
 
     @abstractmethod
-    def select(self, q: torch.Tensor) -> torch.Tensor:
-        raise NotImplementedError
-    @abstractmethod
-    def reset(self) -> None:
-        raise NotImplementedError
-    @abstractmethod
-    def step(self) -> None:
+    def select(self, q: Q) -> Action:
         raise NotImplementedError
