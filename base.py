@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-
 class Base(ABC):
     """
     What name should I give this?
