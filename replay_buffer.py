@@ -5,11 +5,20 @@ from dataclasses import dataclass
 
 @dataclass
 class Transition:
-    s_now: torch.float
-    a: torch.int
-    r: torch.float
-    s_next: torch.float
-    done: torch.bool
+    s_now: torch.FloatTensor
+    a: torch.IntTensor
+    r: torch.FloatTensor
+    s_next: torch.FloatTensor
+    done: torch.BoolTensor
+
+    def __getitem__(self, indices) -> "Transition":
+        s_now = self.s_now[indices]
+        a = self.a[indices]
+        r = self.r[indices]
+        s_next = self.s_next[indices]
+        done = self.done[indices]
+
+        return Transition(s_now, a, r, s_next, done)
 
 class ReplayBuffer(Serializable):
     
@@ -25,6 +34,13 @@ class ReplayBuffer(Serializable):
 
         self.capacity = capacity
         self.transitions = transition
+    
+    def sample(self, count: int) -> Transition:
+        """
+        Could return same rows multiple times. But, whatever, right? Let the py-god select it for us
+        """
+        indices = torch.randint(0, len(self), (count,))
+        return self.transitions[indices]
 
     def push(self, o: Transition) -> None:
         """
@@ -91,3 +107,4 @@ if __name__ == "__main__":
         b.push(transition)
         
     print(len(b))
+    print(b.sample(1))
