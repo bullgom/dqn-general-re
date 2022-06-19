@@ -8,9 +8,11 @@ class Network(torch.nn.Module):
     def __init__(
         self,
         input_size: tuple[int,int,int],
-        output_size: int
+        output_size: int,
+        device: torch.device
     ):
         super(Network, self).__init__()
+        self.device = device
         self.input_size = input_size
         self.output_size = output_size
         b, c, w, h = input_size
@@ -33,6 +35,8 @@ class Network(torch.nn.Module):
         lin_size = w * h * c3
 
         self.head = nn.Linear(lin_size, output_size)
+
+        self.to(device)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = F.relu(self.bn1(self.conv1(x)))
@@ -44,6 +48,7 @@ class Network(torch.nn.Module):
     def copy(self) -> "Network":
         x = Network(self.input_size, self.output_size)
         x.load_state_dict(self.state_dict())
+        x = x.to(self.device)
         return x
         
 if __name__ == "__main__":
