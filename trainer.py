@@ -38,7 +38,8 @@ class Trainer(Base):
         
         s_now, a, r, s_next, done = self.buffer.sample(self.bs)
 
-        prediction = self.nn(s_now).gather(0, a)
+        prediction_temp = self.nn(s_now)
+        prediction = prediction_temp.gather(1, a)
         target = self.target(r, s_next, done)
 
         loss = F.smooth_l1_loss(prediction, target)
@@ -85,5 +86,7 @@ class OffPolicyTrainer(Trainer):
         return loss
     
     def target(self, r:Reward, s_next: State, done: Done) -> torch.Tensor:
-        target = r + done.logical_not() * self.gamma * self.target_network(s_next).max()
+        q : torch.Tensor = self.target_network(s_next)
+        q_max = torch.max(q, dim=1).values
+        target = r + done.logical_not() * self.gamma * q_max
         return target

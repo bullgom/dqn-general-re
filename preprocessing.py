@@ -39,7 +39,8 @@ class WrappedProcessing(Preprocessing):
         self.inner = transform
     
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
-        return self.inner(x)
+        out = self.inner(x)
+        return out
 
 class Resize(WrappedProcessing):
 
