@@ -18,7 +18,7 @@ if __name__ == "__main__":
     gamma = 0.999
     start = 0.9
     end = 0.05
-    decay_steps = 300
+    decay_steps = 10000
     total_episodes = 10000
     steps_per_update = 100
     max_steps_per_episode = 5000

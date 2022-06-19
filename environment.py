@@ -35,10 +35,15 @@ class Environment(Base):
 
 class ALE(Environment):
 
-    def __init__(self, game_name: str, frameskip: int, *args, **kwargs) -> None:
+    def __init__(
+        self, 
+        game_name: str, 
+        frameskip: int, 
+        *args, 
+        **kwargs
+    ) -> None:
         super().__init__(*args, **kwargs)
-
-        self.env = gym.make(game_name, frameskip=frameskip)
+        self.env = gym.make(game_name, frameskip=frameskip, **kwargs)
     
     def step(self, action: Action) -> tuple[State, Reward, Done]:
         # Types are : np.array, float, bool
