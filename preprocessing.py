@@ -60,6 +60,18 @@ class ToTensor(WrappedProcessing):
         w, h, c = size
         return torch.Size([c, w, h])
 
+class Grayscale(WrappedProcessing):
+    def __init__(self) -> None:
+        self.inner = tf.Grayscale()
+    
+    def size(self, size: torch.Size) -> torch.Size:
+        assert len(size) == 3, f"This method assumes input to be 3-dim, got {len(size)}"
+                
+        c, w, h = size
+        return torch.Size([1, w, h])
+
+
+
 class MultiFrame(Preprocessing):
 
     def __init__(self, frames:int) -> None:

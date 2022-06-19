@@ -39,7 +39,7 @@ if __name__ == "__main__":
             prep.WrappedProcessing(tf.ToPILImage()),
             prep.ToTensor(),
             prep.Resize((img_size, img_size)),
-            prep.WrappedProcessing(tf.Grayscale()),
+            prep.Grayscale(),
             prep.AddBatchDim(),
             prep.MultiFrame(frames),
             prep.ToDevice(device),
