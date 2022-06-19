@@ -11,9 +11,9 @@ class Network(torch.nn.Module):
         output_size: int
     ):
         super(Network, self).__init__()
-        c, w, h = input_size
         self.input_size = input_size
         self.output_size = output_size
+        b, c, w, h = input_size
 
         c1 = 16
         c2 = 16
@@ -40,7 +40,11 @@ class Network(torch.nn.Module):
         x = F.relu(self.bn3(self.conv3(x)))
         x = x.view(x.size(0), -1)
         return self.head(x)
-
+    
+    def copy(self) -> "Network":
+        x = Network(self.input_size, self.output_size)
+        x.load_state_dict(self.state_dict())
+        return x
         
 if __name__ == "__main__":
     net = Network((2, 100, 100), 2)
