@@ -14,7 +14,7 @@ Should support multiple actions
 
 class Environment(Base):
 
-    def __init__(self, device : torch.device, preprocessing: list[Preprocessing] = None):
+    def __init__(self, device : torch.device, preprocessing: list[Preprocessing] = None, *args, **kwargs):
         if not preprocessing:
             preprocessing = []
         self.preprocessing = preprocessing
