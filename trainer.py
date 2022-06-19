@@ -87,6 +87,6 @@ class OffPolicyTrainer(Trainer):
     
     def target(self, r:Reward, s_next: State, done: Done) -> torch.Tensor:
         q : torch.Tensor = self.target_network(s_next)
-        q_max = torch.max(q, dim=1).values
+        q_max = torch.max(q, dim=1).values.view(-1, 1)
         target = r + done.logical_not() * self.gamma * q_max
         return target
