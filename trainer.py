@@ -38,7 +38,7 @@ class Trainer(Base):
         
         s_now, a, r, s_next, done = self.buffer.sample(self.bs)
 
-        prediction_temp = self.nn(s_now)
+        prediction_temp = self.nn(s_now).detach()
         prediction = prediction_temp.gather(1, a)
         target = self.target(r, s_next, done)
 
