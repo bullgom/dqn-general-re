@@ -47,7 +47,7 @@ class Trainer(Base):
         self.optim.zero_grad()
         loss.backward()
         for param in self.nn.parameters():
-            param.grad.data.clamp(-1, 1)
+            param.grad.data.clamp_(-1, 1)
         self.optim.step()
 
         return loss
