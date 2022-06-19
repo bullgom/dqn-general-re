@@ -46,9 +46,8 @@ class Network(torch.nn.Module):
         return self.head(x)
     
     def copy(self) -> "Network":
-        x = Network(self.input_size, self.output_size)
+        x = Network(self.input_size, self.output_size, self.device)
         x.load_state_dict(self.state_dict())
-        x = x.to(self.device)
         return x
         
 if __name__ == "__main__":

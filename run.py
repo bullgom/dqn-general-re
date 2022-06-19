@@ -55,7 +55,7 @@ if __name__ == "__main__":
         done=torch.empty((0,1), dtype=torch.bool)
     ))
 
-    network = Network(input_size, output_size).to(device)
+    network = Network(input_size, output_size, device)
     strategy = EpsilonGreedy(start, end, decay_steps)
     agent = Agent(network, strategy)
     optimizer = torch.optim.Adam(network.parameters())
