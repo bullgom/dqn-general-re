@@ -16,14 +16,14 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    capacity = 10000
+    capacity = 100000000
     batch_size = 128
     gamma = 0.999
     start = 0.9
     end = 0.05
-    decay_steps = 10000
+    decay_steps = 100000
     total_episodes = 10000
-    steps_per_update = 100
+    steps_per_update = 50
     max_steps_per_episode = 5000
     mean_duration = 100
     record_interval = 50
@@ -31,8 +31,8 @@ if __name__ == "__main__":
     plot_path = "hi.png"
     img_size = 84
     frameskip = 4
-    frames = 3
-    swap_interval = 50
+    frames = 2
+    swap_interval = 50 * steps_per_update
 
     env = ALE(
         "ALE/Breakout-v5", 
@@ -46,8 +46,7 @@ if __name__ == "__main__":
             prep.AddBatchDim(),
             prep.MultiFrame(frames),
             prep.ToDevice(device),
-        ],
-        render_mode="human"
+        ]
     )
 
     input_size, output_size = env.size()
