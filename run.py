@@ -10,6 +10,9 @@ import preprocessing as prep
 from recorder import Recorder
 from plotter import Plotter
 
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -43,7 +46,8 @@ if __name__ == "__main__":
             prep.AddBatchDim(),
             prep.MultiFrame(frames),
             prep.ToDevice(device),
-        ]
+        ],
+        render_mode="human"
     )
 
     input_size, output_size = env.size()
