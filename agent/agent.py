@@ -20,8 +20,9 @@ class Agent(Base):
             q = self.network(state)
             return self.strategy.select(q).unsqueeze(0)
 
-    def step(self) -> None:
+    def step(self, state: State) -> Action:
         self.strategy.step()
+        return self.select(state)
     
     def reset(self) -> None:
         self.strategy.reset()
