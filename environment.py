@@ -52,6 +52,16 @@ class ALE(Environment):
         for preprocessing in self.preprocessing:
             next_image = preprocessing(next_image)
         
+        if reward > 1:
+            reward = 1
+        elif reward < -1:
+            reward = -1
+        
+        if done:
+            # Because generally, games are meant to end faster.
+            # Longer the better right?
+            reward -= 10
+        
         reward_tensor = torch.tensor([[reward]], device=self.device)
         done_tensor = torch.tensor([[done]], device=self.device)
         return next_image, reward_tensor, done_tensor
