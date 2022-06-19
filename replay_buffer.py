@@ -19,13 +19,30 @@ class Transition:
         done = self.done[indices]
 
         return Transition(s_now, a, r, s_next, done)
+    
+    def tuple(self) -> tuple[torch.FloatTensor,
+                             torch.IntTensor,
+                             torch.FloatTensor,
+                             torch.FloatTensor,
+                             torch.BoolTensor]:
+        return self.s_now, self.a, self.r, self.s_next, self.done
+    
+    def to(self, device: torch.device) -> "Transition":
+        self.s_now = self.s_now.to(device)
+        self.a = self.a.to(device)
+        self.r = self.r.to(device)
+        self.s_next = self.s_next.to(device)
+        self.done = self.done.to(device)
+        return self
+
 
 class ReplayBuffer(Serializable):
     
     def __init__(
         self, 
         capacity: int,
-        transition: Transition
+        device: torch.device,
+        transition: Transition,
     ) -> None:
         """
         Receives an empty transition. Required to specify dimensions
@@ -33,21 +50,22 @@ class ReplayBuffer(Serializable):
         super().__init__()
 
         self.capacity = capacity
-        self.transitions = transition
+        self.transitions = transition.to(device)
+        self.device = device
     
     def sample(self, count: int) -> Transition:
         """
         Could return same rows multiple times. But, whatever, right? Let the py-god select it for us
         """
         indices = torch.randint(0, len(self), (count,))
-        return self.transitions[indices]
+        return self.transitions[indices].tuple()
 
     def push(self, o: Transition) -> None:
         """
         Push new transition and if the resulting buffer size is larger than the capacity, pop the first element
         """
         assert o.a.size(dim=0) == 1, "Input batch size must be 1"
-        t = self.transitions # for easier 
+        t = self.transitions.to(self.device) # for easier 
 
         #i = self.pop_index() if (len(self) > self.capacity) else -1
         if (len(self) >= self.capacity):
@@ -83,6 +101,10 @@ class ReplayBuffer(Serializable):
             "s_next_size": self.transitions.s_next.size()[1:],
             "done_size": self.transitions.done.size()[1:]
         }
+    
+    def to(self, device: torch.device):
+        self.device = device
+        self.transitions.to(device)
 
 if __name__ == "__main__":
     transition = Transition(
