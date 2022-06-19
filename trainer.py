@@ -52,7 +52,7 @@ class Trainer(Base):
         return loss
     
     def target(self, r:Reward, s_next: State, done: Done) -> torch.Tensor:
-        target = r + done * self.gamma * self.nn(s_next).max()
+        target = r + done.logical_not() * self.gamma * self.nn(s_next).max()
         return target
 
     def reset(self) -> None:
@@ -85,5 +85,5 @@ class OffPolicyTrainer(Trainer):
         return loss
     
     def target(self, r:Reward, s_next: State, done: Done) -> torch.Tensor:
-        target = r + done * self.gamma * self.target_network(s_next).max()
+        target = r + done.logical_not() * self.gamma * self.target_network(s_next).max()
         return target
