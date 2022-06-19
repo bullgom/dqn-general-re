@@ -1,7 +1,7 @@
 import torch
 
-State = torch.float
-Action = torch.int
-Reward = torch.float
-Done = torch.bool
-Q = torch.float
+State = torch.FloatTensor
+Action = torch.IntTensor
+Reward = torch.FloatTensor
+Done = torch.BoolTensor
+Q = torch.FloatTensor
