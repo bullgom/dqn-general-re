@@ -28,7 +28,7 @@ if __name__ == "__main__":
     plot_path = "hi.png"
     img_size = 84
     frameskip = 4
-    frames = 2
+    frames = 3
     swap_interval = 50
 
     env = ALE(
@@ -39,6 +39,7 @@ if __name__ == "__main__":
             prep.WrappedProcessing(tf.ToPILImage()),
             prep.ToTensor(),
             prep.Resize((img_size, img_size)),
+            prep.WrappedProcessing(tf.Grayscale()),
             prep.AddBatchDim(),
             prep.MultiFrame(frames),
             prep.ToDevice(device),
@@ -68,7 +69,7 @@ if __name__ == "__main__":
         gamma,
         steps_per_update=steps_per_update
     )
-    recorder = Recorder(mean_duration)
+    recorder = Recorder(mean_duration, record_interval)
     plotter = Plotter()
     
     losses = []
@@ -91,11 +92,7 @@ if __name__ == "__main__":
             state = next_state
             loss = trainer.step()
 
-            recorder.accumulate(r.item(), loss.item())
-
-            if steps % record_interval == 0:
-                recorder.aggregate()
-                recorder.reset_accumulated()
+            recorder.step(r.item(), loss.item())
 
             if steps % plot_interval == 0:
                 plotter.plot(*recorder.data())

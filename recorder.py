@@ -4,15 +4,24 @@ import matplotlib.pyplot as plt
 
 class Recorder():
 
-    def __init__(self, mean_duration: int) -> None:
+    def __init__(self, mean_duration: int, record_interval: int) -> None:
         super().__init__()
 
         self.mean_duration = mean_duration
+        self.record_interval = record_interval
+    
+    def step(self, reward: float, loss: float):
+        self.steps += 1
+        self.accumulate(reward, loss)
+        if self.steps % self.record_interval == 0:
+            self.aggregate()
+            self.reset_accumulated()
 
     def on_game_reset(self):
         self.rewards = []
         self.means = []
         self.losses = []
+        self.steps = 0
         self.best = -float('inf')
         self.reset_accumulated()
 
