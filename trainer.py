@@ -82,6 +82,7 @@ class OffPolicyTrainer(Trainer):
     def step(self) -> torch.Tensor:
         if self.steps % self.swap_interval == 0:
             self.target_network = self.nn.copy()
+            self.target_network.eval()
         loss = super().step()
         return loss
     
