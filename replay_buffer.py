@@ -45,27 +45,30 @@ class ReplayBuffer(Serializable):
         transition: Transition,
     ) -> None:
         """
-        Receives an empty transition. Required to specify dimensions
+        Receives an empty transition. Required to specify dimensions.
+        Saves in CPU memory,
+        Returns in device
         """
         super().__init__()
 
+        self.device =device
         self.capacity = capacity
-        self.transitions = transition.to(device)
-        self.device = device
+        self.transitions = transition
     
     def sample(self, count: int) -> Transition:
         """
         Could return same rows multiple times. But, whatever, right? Let the py-god select it for us
         """
         indices = torch.randint(0, len(self), (count,))
-        return self.transitions[indices].tuple()
+        x = self.transitions[indices].to(self.device)
+        return x.tuple()
 
     def push(self, o: Transition) -> None:
         """
         Push new transition and if the resulting buffer size is larger than the capacity, pop the first element
         """
         assert o.a.size(dim=0) == 1, "Input batch size must be 1"
-        t = self.transitions.to(self.device) # for easier 
+        t = self.transitions
 
         #i = self.pop_index() if (len(self) > self.capacity) else -1
         if (len(self) >= self.capacity):
@@ -101,10 +104,6 @@ class ReplayBuffer(Serializable):
             "s_next_size": self.transitions.s_next.size()[1:],
             "done_size": self.transitions.done.size()[1:]
         }
-    
-    def to(self, device: torch.device):
-        self.device = device
-        self.transitions.to(device)
 
 if __name__ == "__main__":
     transition = Transition(

@@ -39,6 +39,7 @@ class Network(torch.nn.Module):
         self.to(device)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = x.to(self.device)
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
