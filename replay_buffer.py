@@ -5,44 +5,63 @@ from dataclasses import dataclass
 
 @dataclass
 class Transition:
-    s_now: torch.FloatTensor
-    a: torch.IntTensor
-    r: torch.FloatTensor
-    s_next: torch.FloatTensor
-    done: torch.BoolTensor
+
+    s_now : list[torch.FloatTensor]
+    a: list[torch.IntTensor]
+    r: list[torch.FloatTensor]
+    s_next : list[torch.FloatTensor]
+    done: list[torch.BoolTensor]
 
     def __getitem__(self, indices) -> "Transition":
-        s_now = self.s_now[indices]
-        a = self.a[indices]
-        r = self.r[indices]
-        s_next = self.s_next[indices]
-        done = self.done[indices]
+        x = self.dict()
+        for key, val in x.items():
+            x[key] = [val[i] for i in indices]
+        return Transition(**x)
 
-        return Transition(s_now, a, r, s_next, done)
-    
-    def tuple(self) -> tuple[torch.FloatTensor,
-                             torch.IntTensor,
-                             torch.FloatTensor,
-                             torch.FloatTensor,
-                             torch.BoolTensor]:
+    def tuple(self) -> tuple[list[torch.FloatTensor],
+                             list[torch.IntTensor],
+                             list[torch.FloatTensor],
+                             list[torch.FloatTensor],
+                             list[torch.BoolTensor]]:
         return self.s_now, self.a, self.r, self.s_next, self.done
-    
-    def to(self, device: torch.device) -> "Transition":
-        self.s_now = self.s_now.to(device)
-        self.a = self.a.to(device)
-        self.r = self.r.to(device)
-        self.s_next = self.s_next.to(device)
-        self.done = self.done.to(device)
-        return self
 
+    def push(self, transition: "Transition") -> None:
+        
+        for key in self.keys():
+            getattr(self, key).append(getattr(transition, key))
+    
+    def pop(self, i: int) -> None:
+        for key in self.keys():
+            getattr(self, key).pop(i)
+    
+    def cat(self) -> "Transition":
+        d = {}
+        for key in self.keys():
+            d[key] = torch.cat(getattr(self,key))
+        return Transition(**d)
+    
+    def keys(self) -> list[str]:
+        return ["s_now", "a", "r", "s_next", "done"]
+
+    def dict(self) -> dict:
+        return {
+            "s_now": self.s_now,
+            "a": self.a,
+            "r": self.r,
+            "s_next": self.s_next,
+            "done": self.done
+        }
+    
+    @staticmethod
+    def empty() -> "Transition":
+        return Transition([],[],[],[],[])
 
 class ReplayBuffer(Serializable):
     
     def __init__(
         self, 
         capacity: int,
-        device: torch.device,
-        transition: Transition,
+        device: torch.device
     ) -> None:
         """
         Receives an empty transition. Required to specify dimensions.
@@ -53,14 +72,14 @@ class ReplayBuffer(Serializable):
 
         self.device =device
         self.capacity = capacity
-        self.transitions = transition
+        self.transitions = Transition.empty()
     
     def sample(self, count: int) -> Transition:
         """
         Could return same rows multiple times. But, whatever, right? Let the py-god select it for us
         """
         indices = torch.randint(0, len(self), (count,))
-        x = self.transitions[indices].to(self.device)
+        x = self.transitions[indices].cat()
         return x.tuple()
 
     def push(self, o: Transition) -> None:
@@ -68,32 +87,19 @@ class ReplayBuffer(Serializable):
         Push new transition and if the resulting buffer size is larger than the capacity, pop the first element
         """
         assert o.a.size(dim=0) == 1, "Input batch size must be 1"
-        t = self.transitions
 
-        #i = self.pop_index() if (len(self) > self.capacity) else -1
+        self.transitions.push(o)
+
         if (len(self) >= self.capacity):
             i = self.pop_index()
-            ii = i + 1
-            # I'm sorry for who ever sees this for they will see this in their 
-            # nightmares. I couldn't find a better way
-            t.s_now = torch.cat((t.s_now[:i], t.s_now[ii:], o.s_now))
-            t.a = torch.cat((t.a[:i], t.a[ii:], o.a))
-            t.r = torch.cat((t.r[:i], t.r[ii:], o.r))
-            t.s_next = torch.cat((t.s_next[:i], t.s_next[ii:], o.s_next))
-            t.done = torch.cat((t.done[:i], t.done[ii:], o.done))
-        else:
-            t.s_now = torch.cat((t.s_now, o.s_now))
-            t.a = torch.cat((t.a, o.a))
-            t.r = torch.cat((t.r, o.r))
-            t.s_next = torch.cat((t.s_next, o.s_next))
-            t.done = torch.cat((t.done, o.done))
+            self.transitions.pop(i)
         
     def pop_index(self) -> int:
         """Base replay buffer is a FIFO, so it pops the first element"""
         return 0
 
     def __len__(self) -> int:
-        return self.transitions.a.size(dim=0)
+        return len(self.transitions.a)
 
     def serialize(self) -> dict:
         return {

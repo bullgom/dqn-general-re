@@ -9,6 +9,13 @@ class Recorder():
 
         self.mean_duration = mean_duration
         self.record_interval = record_interval
+        self.rewards = []
+        self.means = []
+        self.losses = []
+        self.accum_rewards = []
+        self.accum_means = []
+        self.accum_losses = []
+        self.ep_duration = []
     
     def step(self, reward: float, loss: float):
         self.steps += 1
@@ -18,17 +25,20 @@ class Recorder():
             self.reset_accumulated()
 
     def on_game_reset(self):
-        self.rewards = []
-        self.means = []
-        self.losses = []
+        self.rewards.clear()
+        self.means.clear()
+        self.losses.clear()
+        self.ep_duration.clear()
+
         self.steps = 0
         self.best = -float('inf')
         self.reset_accumulated()
 
+
     def reset_accumulated(self) -> None:
-        self.accum_rewards = []
-        self.accum_means = []
-        self.accum_losses = []
+        self.accum_rewards.clear()
+        self.accum_means.clear()
+        self.accum_losses.clear()
 
     def last_mean(self, r: list[float] = None) -> float:
         if not r:
@@ -50,4 +60,4 @@ class Recorder():
             self.best = self.rewards[-1]
 
     def data(self) -> tuple[list[float], list[float], list[float], float]:
-        return self.rewards, self.means, self.losses, self.best
+        return self.rewards, self.means, self.losses, self.best, self.ep_duration

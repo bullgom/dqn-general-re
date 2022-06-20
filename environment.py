@@ -57,8 +57,8 @@ class ALE(Environment):
         elif reward < -1:
             reward = -1
         
-        reward_tensor = torch.tensor([[reward]])
-        done_tensor = torch.tensor([[done]])
+        reward_tensor = torch.tensor([[reward]], device=self.device)
+        done_tensor = torch.tensor([[done]], device=self.device)
         return next_image, reward_tensor, done_tensor
     
     def reset(self) -> State:

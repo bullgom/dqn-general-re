@@ -24,7 +24,6 @@ if __name__ == "__main__":
     end = 0.05
     decay_steps = 100000
     total_episodes = 10000
-    steps_per_update = 500
     max_steps_per_episode = 5000
     mean_duration = 100
     record_interval = 50
@@ -33,7 +32,9 @@ if __name__ == "__main__":
     img_size = 84
     frameskip = 4
     frames = 3
-    swap_interval = 50 * steps_per_update
+
+    steps_per_update = 20
+    swap_interval = 5 * steps_per_update
 
     env = ALE(
         "ALE/Breakout-v5", 
@@ -51,13 +52,7 @@ if __name__ == "__main__":
 
     input_size, output_size = env.size()
 
-    buffer = ReplayBuffer(capacity, device, transition=Transition(
-        s_now=torch.empty((0, *input_size[1:])),
-        a=torch.empty((0, 1), dtype=torch.int),
-        r=torch.empty((0,1)),
-        s_next=torch.empty((0, *input_size[1:])),
-        done=torch.empty((0,1), dtype=torch.bool)
-    ))
+    buffer = ReplayBuffer(capacity, device)
 
     network = Network(input_size, output_size, device)
     strategy = EpsilonGreedy(start, end, decay_steps)
@@ -88,7 +83,7 @@ if __name__ == "__main__":
         for i_episode in range(max_steps_per_episode):
             steps +=1
 
-            action = agent.step(state).to(cpu)
+            action = agent.step(state)
             
             next_state, r, done = env.step(action)
             buffer.push(Transition(state, action, r, next_state, done))
@@ -103,6 +98,7 @@ if __name__ == "__main__":
 
             if done.item():
                 break
-
+        
+        recorder.ep_duration.append(i_episode)
                 
     
