@@ -44,7 +44,7 @@ class Plotter:
 
         self.dur_axes.clear()
         self.dur_axes.plot(duration, color="black", linewidth=1)
-        self.loss_axes.set_title("Duration Per Episode")
+        self.dur_axes.set_title("Duration Per Episode")
         self.dur_axes.grid()
     
     def save(self, path: str) -> None:
